@@ -1,0 +1,21 @@
+{
+  "name": "test22hbg",
+  "version": "1.0.0",
+  "description": "development of a web service that allows REST-API calls",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon app.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "mysql": "^2.18.1",
+    "node-fetch": "^2.7.0",
+    "nodemon": "^3.0.1",
+    "redis": "^4.6.11",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.0"
+  }
+}

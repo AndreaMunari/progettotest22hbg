@@ -1,0 +1,21 @@
+Dipendenze:
+swagger-jsdoc (https://www.npmjs.com/package/swagger-jsdoc)
+Pacchetto npm per documentazione automatica con Swagger per Javascript.
+
+swagger-ui-express (https://www.npmjs.com/package/swagger-ui-express)
+Pacchetto npm per documentazione automatica con Swagger per ExpressJS.
+
+express (https://www.npmjs.com/package/express)
+Pacchetto npm per la creazione di REST-API.
+
+nodemon (https://www.npmjs.com/package/nodemon)
+Pacchetto npm per hot reload dell'applicazione a ogni modifica.
+
+node-fecth (https://www.npmjs.com/package/node-fetch)
+Paccehtto npm per fare fetching di risorse https.
+
+redis (https://www.npmjs.com/package/redis)
+Pacchetto npm per la gestione della cache (come richiesto da requisito 4).
+
+mysql (https://www.npmjs.com/package/mysql)
+Pacchetto npm per gestire la connessione a database mysql.
