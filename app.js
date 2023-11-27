@@ -13,8 +13,12 @@ const REDIS_HOST = process.env.REDIS_HOST || "127.0.0.1"
 const REDIS_PORT = process.env.REDIS_PORT || 6379;
 const REDIS_TIMEOUT = process.env.REDIS_TIMEOUT || 5000;
 
+//local configuration:
 //const client = redis.createClient(REDIS_HOST, REDIS_PORT, REDIS_TIMEOUT);
-const redisUrl = 'rediss://red-clidj0dkt82s73d7nh8g:svOWSBMdFW1EWpA2fugkfHwTfw3QWZYr@frankfurt-redis.render.com:6379';
+//should work from anywhere
+const redisExternalUrl = 'rediss://red-clidj0dkt82s73d7nh8g:svOWSBMdFW1EWpA2fugkfHwTfw3QWZYr@frankfurt-redis.render.com:6379';
+//only works on the render.com hosting:
+const redisInternalUrl = 'redis://red-clidj0dkt82s73d7nh8g:6379';
 const client = redis.createClient({
     legacyMode: true,
     redisUrl,
