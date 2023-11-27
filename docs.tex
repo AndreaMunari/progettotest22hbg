@@ -1,0 +1,330 @@
+\documentclass{article}
+\usepackage{graphicx} % Required for inserting images
+\usepackage[utf8]{inputenc}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+% Taken from Lena Herrmann at 
+% http://lenaherrmann.net/2010/05/20/javascript-syntax-highlighting-in-the-latex-listings-package
+\usepackage{color}
+\definecolor{lightgray}{rgb}{.9,.9,.9}
+\definecolor{darkgray}{rgb}{.4,.4,.4}
+\definecolor{purple}{rgb}{0.65, 0.12, 0.82}
+
+\lstdefinelanguage{JavaScript}{
+  keywords={typeof, new, true, false, catch, function, return, null, catch, switch, var, if, in, while, do, else, case, break},
+  keywordstyle=\color{blue}\bfseries,
+  ndkeywords={class, export, boolean, throw, implements, import, this},
+  ndkeywordstyle=\color{darkgray}\bfseries,
+  identifierstyle=\color{black},
+  sensitive=false,
+  comment=[l]{//},
+  morecomment=[s]{/*}{*/},
+  commentstyle=\color{purple}\ttfamily,
+  stringstyle=\color{red}\ttfamily,
+  morestring=[b]',
+  morestring=[b]"
+}
+
+\lstset{
+   language=JavaScript,
+   backgroundcolor=\color{lightgray},
+   extendedchars=true,
+   basicstyle=\footnotesize\ttfamily,
+   showstringspaces=false,
+   showspaces=false,
+   numbers=left,
+   numberstyle=\footnotesize,
+   numbersep=9pt,
+   tabsize=2,
+   breaklines=true,
+   showtabs=false,
+   captionpos=b
+}
+
+
+
+
+\title{Documentazione progetto Test 22HBG Backend API}
+\author{Andrea Munari}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduzione}
+Questa documentazione fornisce dettagli approfonditi sull'API del backend del Progetto Test 22HBG. L'API è sviluppata in \href{https://www.javascript.com/}{JavaScript} utilizzando \href{https://nodejs.org/en}{Node.js}, \href{https://www.npmjs.com/package/express}{Express}, \href{https://www.npmjs.com/package/mysql}{MySQL}, \href{https://www.npmjs.com/package/nodemon}{Nodemon}, \href{https://www.npmjs.com/package/redis}{Redis} e \href{https://www.npmjs.com/package/swagger}{Swagger}.
+
+\section{Configurazione dell'Ambiente di Sviluppo}
+Per iniziare, segui i passaggi seguenti:
+
+\begin{enumerate}
+    \item Installa le dipendenze con il comando: \texttt{npm install}.
+    \item Configura le variabili d'ambiente nel file \texttt{.env} o utilizza i valori di default.
+    \item Avvia l'applicazione con il comando: \texttt{npm start}.
+\end{enumerate}
+
+
+\section{File database.js}
+Il file \texttt{database.js} contiene la configurazione necessaria per connettersi al database MySQL offerto da \href{https://www.freesqldatabase.com/}{freesqldatabase.com}.
+\linebreak
+I parametri di connessione includono:
+
+\begin{itemize}
+    \item \texttt{host}: Indirizzo del server MySQL.
+    \item \texttt{database}: Nome del database.
+    \item \texttt{user}: Nome utente per la connessione al database.
+    \item \texttt{password}: Password per la connessione al database.
+    \item \texttt{port}: Porta di connessione al server MySQL.
+\end{itemize}
+
+Il file gestisce la connessione al database e fornisce l'oggetto di connessione da utilizzare nelle altre parti dell'applicazione.
+
+
+\section{Documentazione API}
+La documentazione API è generata automaticamente utilizzando Swagger e può essere esplorata interattivamente visitando \href{https://progettotest22hbg.onrender.com/api-docs}{progettotest22hbg.onrender.com/api-docs}.
+
+\section{Endpoints}
+\subsection{Ottenere la lista di tutti i post}
+\textbf{Endpoint:} \texttt{GET /posts}\\
+Questo endpoint restituisce la lista di tutti i post dal feed.
+
+\begin{lstlisting}[language=JavaScript, caption={Implementazione dell'endpoint per ottenere la lista di tutti i post}, label={lst:getPostsEndpoint}]
+app.get('/posts', (req, res) => {
+    fetch(URL)
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        const postList = [];
+        k = data;
+        postList.push(k);
+        console.log('my data ', postList);
+        res.json(postList);
+    })
+    .catch(error => {
+        console.error('Fetch error:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    });
+});
+\end{lstlisting}
+
+Quando una richiesta \texttt{GET} viene effettuata su \texttt{/posts}, l'applicazione esegue una richiesta al feed tramite la funzione \texttt{fetch}.
+Se la chiamata ha successo (\texttt{200 OK}), restituisce un file JSON contenente tutti i post dal feed.
+In caso di errore durante la richiesta al feed, viene restituito uno stato di errore interno del server.
+
+\subsection{Ottenere i post filtrati}
+\textbf{Endpoint:} \texttt{GET /posts-filtered}\\
+Questo endpoint restituisce una lista di post filtrati in base ai parametri:
+\begin{itemize}
+  \item \texttt{title}: filtra solo i post contenenti la stringa specificata
+  \item \texttt{items}: numero dei post da restituire
+\end{itemize}
+Questo endpoint è l'unico ad avere una gestione di cache per migliorare le prestazioni. Per farlo utilizza la funzione \texttt{cache} come middleware per \href{https://www.npmjs.com/package/redis}{Redis}.
+
+\begin{lstlisting}[language=JavaScript, caption={Implementazione dell'endpoint per ottenere i post filtrati}, label={lst:getFilteredPostsEndpoint}]
+app.get('/posts-filtered', cache, (req, res, next) => {
+    fetch(URL)
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log("Fetching data...")
+        const postList = [];
+        const filteredData = data.filter(element =>
+            element.title.rendered.includes(req.query.title)
+        );
+
+        for (let i = 0; i < req.query.items && i < filteredData.length; i++) {
+            postList.push(filteredData[i]);
+        }
+
+        console.log('my data ', postList); // This gives me the filtered posts
+
+        //create a key to cache this result
+        redis_key = req.query.title+req.query.items;
+        console.log("THE REDIS KEY IS:"+redis_key);
+        //memorize in cache for one hour
+        client.setEx(redis_key, 3600, JSON.stringify(postList));
+
+        res.json(postList);
+    })
+    .catch(error => {
+        console.error('Fetch error:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    });
+});
+
+\end{lstlisting}
+
+La funzione \texttt{cache} controlla se i risultati desiderati sono già presenti nella cache Redis. In caso affermativo, restituisce immediatamente i risultati cached senza effettuare una nuova richiesta al feed. In caso contrario, effettua il \texttt{fetch} e salva l'output in Redis usando come chiave la concatenazione dei parametri della richiesta.
+\linebreak
+Ad esempio, se la richiesta fosse \texttt{/posts-filtered?title=home\&items=5}, allora la chiave per accedere all'output salvato su Redis sarà \texttt{home5}.
+    \linebreak
+Il codice JavaScript implementa l'endpoint, gestendo la richiesta al feed, la manipolazione dei dati, la cache e la risposta al client. In caso di errore durante la richiesta al feed, viene restituito uno stato di errore interno del server.
+
+
+
+\subsection{Sincronizzare il database con i post dal feed}
+\textbf{Endpoint:} \texttt{GET /sync-db}\\
+Questo endpoint legge i contenuti dal feed e li scrive nella tabella 'posts' nel database.
+
+
+\begin{lstlisting}[language=JavaScript, caption={Implementazione dell'endpoint per sincronizzare il database con i post dal feed}, label={lst:syncDbEndpoint}]
+app.get('/sync-db', (req, res) => {
+    fetch(URL)
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        const postList = [];
+        k = data;
+        postList.push(k);
+        
+        // extracting the info from the json file to put in the table
+        console.log(postList);
+        
+        var query = "INSERT INTO posts ("+
+            "ID, post_author, post_date, post_date_gmt, post_content, "+
+            "post_title, post_excerpt, post_status, comment_status, "+
+            "ping_status, post_modified, post_modified_gmt"+
+            ") values ";
+        let i;
+        let values = '';
+        for (i = 0; i < postList[0].length; i++) {
+            let post = postList[0][i];
+
+            let id = post.id;
+            let post_author = post.author;
+            let post_date = post.date;
+            let post_date_gmt = post.date_gmt;
+            let post_content = post.content.rendered; // remove the 'rendered' if it doesn't work
+            let post_title = post.title.rendered; // same
+            let post_excerpt = post.excerpt.rendered; // same
+            let post_status = post.status
+            let comment_status = post.comment_status; 
+            let ping_status = post.ping_status; 
+            let post_modified = post.modified;
+            let post_modified_gmt = post.modified_gmt;
+            
+            if (i == postList[0].length-1) {
+                values += '('+id+', '+
+                            post_author+', '+ // int, it doesn't need quotes
+                            `'${post_date}', ` + // enclose the date in single quotes
+                            `'${post_date_gmt}', ` + // same
+                            `${database.escape(post_content)}, ` + // Escape the post content
+                            `${database.escape(post_title)}, ` + // same
+                            `${database.escape(post_excerpt)}, ` + // same
+                            `'${post_status}', ` +
+                            `'${comment_status}', ` +
+                            `'${ping_status}', ` +
+                            `'${post_modified}', ` +
+                            `'${post_modified_gmt}')`;
+                console.log("\n"+values+"\n");
+            } else {
+                values += '('+id+', '+
+                            post_author+', '+ // int, it doesn't need quotes
+                            `'${post_date}', ` + // enclose the date in single quotes
+                            `'${post_date_gmt}', ` + // same
+                            `${database.escape(post_content)}, ` + // Escape the post content
+                            `${database.escape(post_title)}, ` + // same
+                            `${database.escape(post_excerpt)}, ` + // same
+                            `'${post_status}', ` +
+                            `'${comment_status}', ` +
+                            `'${ping_status}', ` +
+                            `'${post_modified}', ` +
+                            `'${post_modified_gmt}'),`;
+                console.log("\n"+values+"\n");
+            }
+        }
+        query+=values;
+        console.log(query);
+        
+        // res.json(postList);
+        let resText = "Requested adding i="+i+" rows to the database table 'posts'.<br><br>";
+        database.query(query, (error, data)=>{
+            if (error) {
+                res.send(resText+"Request had some errors:<br>"+error)
+            } else {
+                res.send(resText+"Request completed");
+            }
+        })
+    })
+    .catch(error => {
+        console.error('Fetch error:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    });
+});
+\end{lstlisting}
+
+Questo endpoint legge i contenuti dal feed attraverso una richiesta HTTP, e successivamente inserisce i dati nella tabella 'posts' nel database MySQL. La funzione esegue un'unica query SQL di tipo INSERT per tutti i post ottenuti dal feed e restituisce una risposta che informa l'utente del successo o del fallimento della query.
+La scelta di effettuare un'unica INSERT per tutti i post individuati nasce dalla volontà di minimizzare il numero di interazioni con il database dato che il servizio di hosting utilizzato è piuttosto lento nel piano gratuito.
+
+
+\subsection{Ottenere i post dal database}
+\textbf{Endpoint:} \texttt{GET /posts-db}\\
+Questo endpoint legge e restituisce i contenuti della tabella 'posts' nel database in formato JSON.
+
+\begin{lstlisting}[language=JavaScript, caption={Implementazione dell'endpoint per ottenere i contenuti della tabella 'posts' dal database}, label={lst:getPostsDbEndpoint}]
+app.get('/posts-db', (req, res)=> {
+    var query = "SELECT * FROM posts";
+
+    database.query(query, (error, data)=>{
+        if(error) {
+            throw error;
+        }
+        const ris = JSON.stringify(data, null, 2);
+        console.log(ris);
+        res.header('Content-Type', 'application/json');
+        res.send(ris);
+    });
+});
+\end{lstlisting}
+
+Quando una richiesta \texttt{GET} viene effettuata su \texttt{/posts-db}, l'applicazione esegue una query SQL di tipo \texttt{SELECT} per ottenere tutti i dati dalla tabella 'posts' e restituisce il risultato in formato JSON.
+Nel caso in cui la tabella fosse vuota, viene restituito un file JSON vuoto, senza causare errori.
+In caso di errori imprevisti durante l'esecuzione della query, viene generata un'eccezione.
+
+\subsection{Eliminare tutti i post dal database}
+\textbf{Endpoint:} \texttt{GET /posts-db-del}\\
+Questo endpoint elimina tutti i record dalla tabella 'posts' nel database.
+\linebreak
+Questo endpoint non fa parte dei requisiti, è stato scelto di aggiungerlo solo per favorire maggiore praticità nella verifica del comportamento dell'API. 
+
+\begin{lstlisting}[language=JavaScript, caption={Implementazione dell'endpoint per eliminare tutte le righe dalla tabella 'posts' del database}, label={lst:deletePostsDbEndpoint}]
+app.get('/posts-db-del', (req, res)=> {
+    var query = "DELETE FROM posts";
+
+    let resText = "Request to delete all rows in 'posts' table.<br>";
+    database.query(query, (error, data)=>{
+        if(error) {
+            res.send(resText+"Request had some errors:<br>"+error);
+        } else {
+            res.send(resText+"Request completed successfully");
+        }
+    });
+});
+\end{lstlisting}
+
+Quando una richiesta \texttt{GET} viene effettuata su \texttt{/posts-db-del}, l'applicazione esegue una query SQL di tipo \texttt{DELETE} per eliminare tutte le righe dalla tabella 'posts' e restituisce una risposta che informa l'utente sul successo o il fallimento della query SQL.
+
+\section{Cache}
+L'API utilizza la cache Redis per migliorare le prestazioni. Se un risultato è già presente nella cache, verrà restituito immediatamente senza effettuare una nuova richiesta al feed.
+
+\section{Ambiente di Sviluppo}
+Per lo sviluppo, puoi utilizzare Nodemon per il riavvio automatico dell'applicazione in caso di modifiche al codice.
+Quando si avvia l'application con \texttt{npm start}, nodemon viene eseguito automaticamente.
+
+
+\end{document}
