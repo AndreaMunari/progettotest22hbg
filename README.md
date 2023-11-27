@@ -1,7 +1,4 @@
-
-
-NB:
-questa applicazione è stata sviluppata per rispettare i requisiti obbligatori indicati nel documento di progetto e per rispettare i requisiti facoltativi numero 1 e 2.
+Questa applicazione è stata sviluppata per rispettare i requisiti obbligatori indicati nel documento di progetto e per rispettare i requisiti facoltativi numero 1 e 2.
 
 
 # Progetto Test 22HBG Backend API
@@ -34,7 +31,7 @@ Questa API è scritta in JavaScript utilizzando Node.js, Express, MySQL, Nodemon
 
 ## Documentazione API
 
-La documentazione dettagliata dell'API è disponibile attraverso Swagger. Visita [http://localhost:5000/api-docs](http://localhost:5000/api-docs) per esplorare la documentazione interattiva.
+La documentazione dettagliata dell'API è disponibile attraverso Swagger. Visita [https://progettotest22hbg.onrender.com/api-docs](https://progettotest22hbg.onrender.com/api-docs) per esplorare la documentazione interattiva.
 
 ## Endpoints
 
